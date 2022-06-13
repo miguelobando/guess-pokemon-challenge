@@ -1,0 +1,32 @@
+@import url(./animations.css);
+main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  flex-direction: column;
+  padding: 24px;
+}
+
+img {
+  image-rendering: pixelated;
+  width: 30vh;
+}
+
+.stack {
+  margin-top: 5px;
+  display: flex;
+  flex-direction: column;
+}
+
+#sillouete {
+  -webkit-filter: contrast(0) sepia(0%) hue-rotate(190deg) saturate(2000%)
+    brightness(0%);
+  filter: contrast(0) sepia(0%) hue-rotate(190deg) saturate(2000%)
+    brightness(0%);
+  opacity: 1;
+}
+
+.mt-2 {
+  margin-top: 20px;
+}
