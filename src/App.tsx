@@ -1,11 +1,11 @@
 import { useEffect, useState, useMemo } from "react";
 import { usePokemons } from "./hooks/usePokemons";
 
+type PokemonDisplayType = "original" | "sillouete";
+
 function App() {
   const { pokemons, refetchData, lastAnswer, isLoading } = usePokemons();
-  const [imageColor, setImageColor] = useState<"original" | "sillouete">(
-    "sillouete"
-  );
+  const [imageColor, setImageColor] = useState<PokemonDisplayType>("sillouete");
   const [selectedAnswer, setSelectedAnswer] = useState<number>();
 
   const sendAnswer = (arg: number) => {
@@ -19,8 +19,11 @@ function App() {
     await refetchData();
   };
 
-  const isCorrect = useMemo(() => lastAnswer === selectedAnswer, []);
-  const hasSelectedAnswer = Boolean(selectedAnswer);
+  const isCorrect = useMemo(
+    () => lastAnswer === selectedAnswer,
+    [selectedAnswer, lastAnswer]
+  );
+  const hasSelectedAnswer = selectedAnswer !== undefined;
 
   if (isLoading) {
     return (
@@ -30,14 +33,16 @@ function App() {
     );
   }
 
-  console.log({ pokemons, lastAnswer });
-
   return (
     <main>
       <div>Let&apos;s get this party started</div>
       <div>
-        {isCorrect && <span className="nes-text is-success">Correct!</span>}
-        {!isCorrect && <span className="nes-text is-error">Wrong!</span>}
+        {isCorrect && hasSelectedAnswer && (
+          <span className="nes-text is-success">Correct!</span>
+        )}
+        {!isCorrect && hasSelectedAnswer && (
+          <span className="nes-text is-error">Wrong!</span>
+        )}
       </div>
       <div>{hasSelectedAnswer && pokemons[lastAnswer].name}</div>
       <div>
