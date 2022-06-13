@@ -1,81 +1,68 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { usePokemons } from "./hooks/usePokemons";
 
 function App() {
-  const { pokemons, fetchData, answer } = usePokemons();
-  const [silloueteSrc, setSilloueteSrc] = useState<string>("");
+  const { pokemons, refetchData, lastAnswer, isLoading } = usePokemons();
   const [imageColor, setImageColor] = useState<"original" | "sillouete">(
     "sillouete"
   );
-  const [isCorrect, setIsCorrect] = useState<Boolean | null>(null);
+  const [selectedAnswer, setSelectedAnswer] = useState<number>();
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    if (pokemons.length > 0) {
-      if (answer === 0) setSilloueteSrc(pokemons[0].image);
-      else setSilloueteSrc(pokemons[1].image);
-    }
-  }, [pokemons]);
-
-  const sendAnswer = (arg: number): void => {
+  const sendAnswer = (arg: number) => {
+    setSelectedAnswer(arg);
     setImageColor("original");
-    if (arg === answer) setIsCorrect(true);
-    else setIsCorrect(false);
   };
 
-  const restart = () => {
-    fetchData().then((e) => {
-      setIsCorrect(null);
-      setImageColor("sillouete");
-    });
+  const restart = async () => {
+    setSelectedAnswer(undefined);
+    setImageColor("sillouete");
+    await refetchData();
   };
 
-  if (answer === -1) {
-    return (
-      <main>
-        <div className=".dot-flashin"></div>
-      </main>
-    );
-  } else
-    return (
-      <main>
-        <div>Let&apos;s get this party started</div>
-        <div>
-          {isCorrect === true && (
-            <span className="nes-text is-success">Correct!</span>
-          )}
-          {isCorrect === false && (
-            <span className="nes-text is-error">Wrong!</span>
-          )}
-        </div>
-        <div>{isCorrect !== null && pokemons[answer].name}</div>
+  const isCorrect = useMemo(() => lastAnswer === selectedAnswer, []);
+  const hasSelectedAnswer = Boolean(selectedAnswer);
 
-        <div>
-          <img id={imageColor} src={silloueteSrc} />
-        </div>
-        {isCorrect === null && (
-          <div className="stack">
-            <a className="nes-btn" onClick={() => sendAnswer(0)}>
-              {pokemons[0].name}
-            </a>
-            <a className="nes-btn mt-2" onClick={() => sendAnswer(1)}>
-              {pokemons[1].name}
-            </a>
-          </div>
-        )}
-        {isCorrect !== null && (
-          <div className="stack">
-            <a className="nes-btn" onClick={() => restart()}>
-              {" "}
-              Restart{" "}
-            </a>
-          </div>
-        )}
+  if (isLoading) {
+    return (
+      <main>
+        <div className=".dot-flashing"></div>
       </main>
     );
+  }
+
+  console.log({ pokemons, lastAnswer });
+
+  return (
+    <main>
+      <div>Let&apos;s get this party started</div>
+      <div>
+        {isCorrect && <span className="nes-text is-success">Correct!</span>}
+        {!isCorrect && <span className="nes-text is-error">Wrong!</span>}
+      </div>
+      <div>{hasSelectedAnswer && pokemons[lastAnswer].name}</div>
+      <div>
+        <img id={imageColor} src={pokemons[lastAnswer]?.image} />
+      </div>
+      {!hasSelectedAnswer && (
+        <div className="stack">
+          {pokemons.map((pokemon, idx) => {
+            return (
+              <button className="nes-btn" onClick={() => sendAnswer(idx)}>
+                {pokemon.name}
+              </button>
+            );
+          })}
+        </div>
+      )}
+      {hasSelectedAnswer && (
+        <div className="stack">
+          <button className="nes-btn" onClick={() => restart()}>
+            Restart
+          </button>
+        </div>
+      )}
+    </main>
+  );
 }
 
 export default App;
